@@ -87,14 +87,14 @@ JSON SCHEMA:
 }"""
 
 
-MAX_TOTAL_CHARS = 25000  # ~6K tokens, safe for Groq limits
-MAX_PER_FILE_CHARS = 2000
+MAX_TOTAL_CHARS = 16000  # ~4K tokens, leaves room for 2K output within Groq 8000 TPM limit
+MAX_PER_FILE_CHARS = 1500
 
 
 def build_prompt(repo_info: dict, tree_string: str, files: dict[str, str]) -> str:
     # Truncate tree if too long
-    if len(tree_string) > 3000:
-        tree_string = tree_string[:3000] + "\n... (truncated)"
+    if len(tree_string) > 2500:
+        tree_string = tree_string[:2500] + "\n... (truncated)"
 
     # Budget: reserve space for tree + metadata + system prompt
     overhead = len(tree_string) + 1500
@@ -140,7 +140,7 @@ def explain_codebase(repo_info: dict, tree_string: str, files: dict[str, str]) -
             {"role": "user", "content": prompt},
         ],
         temperature=0.3,
-        max_tokens=4000,
+        max_tokens=2200,
         response_format={"type": "json_object"},
     )
 
