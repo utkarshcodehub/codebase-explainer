@@ -18,14 +18,19 @@ export default function OnboardingGuide({ guide }) {
           <h4 className="font-body text-xs font-semibold text-muted/60 uppercase tracking-wider mb-3">
             Suggested Reading Order
           </h4>
-          <div className="relative pl-8">
-            <div className="absolute left-3 top-2 bottom-2 w-px bg-border" />
+          <div className="relative space-y-1">
+            {/* Vertical timeline connector line centered behind the w-6 badges (12px = center of 24px badge) */}
+            <div className="absolute left-[11px] top-3 bottom-3 w-px bg-border z-0" />
+
             {guide.reading_order.map((file, i) => (
-              <div key={i} className="relative flex items-center gap-3 py-2">
-                <div className="absolute left-[-20px] w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center">
+              <div key={i} className="relative z-10 flex items-center gap-3 py-1.5">
+                {/* Number badge */}
+                <div className="w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center shrink-0">
                   <span className="font-mono text-[10px] text-muted">{i + 1}</span>
                 </div>
-                <span className="font-mono text-sm text-ink">{file}</span>
+
+                {/* File path */}
+                <span className="font-mono text-sm text-ink truncate">{file}</span>
               </div>
             ))}
           </div>

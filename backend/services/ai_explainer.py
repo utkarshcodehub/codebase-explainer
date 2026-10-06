@@ -11,41 +11,80 @@ def get_client():
     return client
 
 
-SYSTEM_PROMPT = """You are a senior software engineer who explains codebases clearly.
-Given a GitHub repository's structure and key file contents, produce a comprehensive explanation.
+SYSTEM_PROMPT = """You are a Principal Software Architect specializing in automated codebase analysis and technical documentation.
 
-You MUST respond with valid JSON only — no markdown, no backticks, no extra text.
+TASK:
+Analyze the provided GitHub repository structure and file contents to generate a precise, actionable visual and structural analysis.
 
-JSON schema:
+OUTPUT CONSTRAINTS:
+- Output MUST be valid, parseable raw JSON.
+- DO NOT wrap the output in Markdown code blocks (e.g., no ```json ... ```).
+- Output NO introductory, conversational, or concluding text outside the JSON object.
+- Escape all special characters inside string values properly (e.g., use \\" for double quotes, \\n for line breaks).
+
+ANALYSIS GUIDELINES:
+1. Grounding: Rely strictly on provided repository metadata and files. If a file or pattern is not explicitly visible, do not speculate.
+2. Architecture & Relationships: Capture exact file paths and meaningful dependency/flow relationships. Avoid trivial or redundant relationships.
+3. Mermaid Rules:
+   - Output valid Mermaid.js flowchart syntax using `graph TD`.
+   - Use simple alphanumeric IDs for nodes (e.g., `node1`, `node2`).
+   - Wrap labels in explicit double quotes inside square brackets: `node1["Label Text"]`.
+   - Do NOT use special symbols, unescaped quotes, nested brackets, or parentheses inside label text. Keep labels concise (< 30 characters).
+   - Maximum 15 nodes. Focus on high-level system boundaries and primary data flows.
+
+JSON SCHEMA:
 {
   "tech_stack": [
-    {"name": "string", "category": "language|framework|database|devops|styling|testing|other", "confidence": "confirmed|likely"}
+    {
+      "name": "string",
+      "category": "language|framework|database|devops|styling|testing|other",
+      "confidence": "confirmed|likely"
+    }
   ],
-  "architecture_summary": "2-3 paragraph overview of the architecture and design patterns used",
+  "architecture_summary": "2-3 concise paragraphs detailing the actual system architecture, primary data flow, state management, and design patterns used.",
   "entry_points": [
-    {"file": "path/to/file", "purpose": "what this entry point does"}
+    {
+      "file": "path/to/file",
+      "purpose": "Precise responsibility of this entry point"
+    }
   ],
   "file_relationships": [
-    {"from": "file_a", "to": "file_b", "relationship": "imports|configures|routes_to|extends|uses"}
+    {
+      "from": "path/to/file_a",
+      "to": "path/to/file_b",
+      "relationship": "imports|configures|routes_to|extends|uses"
+    }
   ],
   "key_modules": [
-    {"path": "path/to/file_or_dir", "role": "what this module/file is responsible for", "importance": "critical|important|supporting"}
+    {
+      "path": "path/to/file_or_dir",
+      "role": "Specific architectural role and responsibility",
+      "importance": "critical|important|supporting"
+    }
   ],
-  "mermaid_diagram": "A valid Mermaid flowchart (graph TD) showing the architecture. Use simple node IDs (A, B, C...) with labels. Keep it under 15 nodes. NO special characters in labels — only alphanumeric, spaces, and hyphens.",
+  "mermaid_diagram": "graph TD\\n  A[\\\"Client App\\\"] --> B[\\\"API Router\\\"]",
   "onboarding_guide": {
-    "start_here": "Which file to read first and why",
-    "reading_order": ["ordered list of files/dirs to read"],
-    "key_concepts": ["list of domain concepts a new dev should understand"],
+    "start_here": "Exact file to inspect first and why it sets up the system context",
+    "reading_order": [
+      "ordered path/to/file strings"
+    ],
+    "key_concepts": [
+      "Domain concepts or specific architectural mechanics essential for a developer"
+    ],
     "common_tasks": [
-      {"task": "description of common task", "files": ["relevant files"]}
+      {
+        "task": "Description of a frequent developer task (e.g., adding a route, modifying schema)",
+        "files": [
+          "relevant/file/paths"
+        ]
+      }
     ]
   },
   "complexity_rating": {
-    "score": 1-10,
-    "reasoning": "why this rating"
+    "score": 1,
+    "reasoning": "Concrete analysis explaining why this codebase receives a 1-10 rating based on coupling, modularity, and abstraction scale"
   }
-}
-"""
+}"""
 
 
 MAX_TOTAL_CHARS = 25000  # ~6K tokens, safe for Groq limits
@@ -95,7 +134,7 @@ def explain_codebase(repo_info: dict, tree_string: str, files: dict[str, str]) -
     prompt = build_prompt(repo_info, tree_string, files)
 
     response = get_client().chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
